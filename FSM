@@ -1,0 +1,56 @@
+module fsm (input clk,rst,in, output reg [1:0] state);
+parameter idle = 2'b00, state1 = 2'b01, state2 = 2'b10;
+always @(posedge clk or posedge rst) begin
+if (rst) begin
+state <= IDLE;
+end 
+else begin
+case (state)
+idle:   state <= in ? state1 : idle;
+state1: state <= in ? state2 : idle;
+state2: state <= in ? state2 : idle;
+default: state <= idle;
+endcase
+end
+end
+endmodule
+module fsm_tb;
+reg clk;
+reg rst;
+reg in;
+wire [1:0] state;
+fsm uut (.clk(clk),.rst(rst),.in(in),.state(state));
+initial begin
+clk = 0;
+forever #50 clk = ~clk;
+end
+initial begin
+rst = 1; in = 0;
+#100;
+rst = 0;
+#100; 
+in = 1; #100;
+if (state !== uut.state1) 
+$display("Test failed: idle -> state1");
+in = 1; #100;
+if (state !== uut.state2) $display("Test failed: state1 -> state2");
+in = 0; #100;
+if (state !== uut.idle) $display("Test failed: State2 -> idle");
+in = 0; #100;
+if (state !== uut.idle) $display("Test failed: IDLE -> IDLE");
+$display("All tests passed.");
+#100; 
+in = 1; #100;
+if (state !== uut.state1) 
+$display("Test failed: idle -> state1");
+in = 1; #100;
+if (state !== uut.state2) $display("Test failed: state1 -> state2");
+in = 0; #100;
+if (state !== uut.idle) $display("Test failed: State2 -> idle");
+in = 0; #100;
+if (state !== uut.idle) $display("Test failed: IDLE -> IDLE");
+$display("All tests passed.");
+$stop;
+end
+endmodule
+
